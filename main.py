@@ -59,8 +59,21 @@ class NnModel:
         log_probs = -np.log(predictions)
         return log_probs/self.yshape[0]
     def backpropagation(self,softmax:np.ndarray,learning_rate:float)->None:
-        pass
-    def fitr(self):
+        delta2 = np.copy(softmax)
+        delta2[range(x.shape[0]),y] -= 1
+        dW2 = (self.f1.T).dot(delta2)
+        dB2 = np.sum(delta2, axis=0, keepdims=True)
+        delta1 = delta2.dot(self.W2.T) * (1 - np.power(np.tanh(self.z1), 2 ))
+        dW1 = (x.T).dot(delta1)
+        dB1 = np.sum(delta1, axis=0, keepdims=True)
+        
+        #atualiando pesos e bias
+        self.W1 -= learning_rate * dW1
+        self.W2 -= learning_rate * dW2
+        self.B1 -= learning_rate * dB1
+        self.B2 -= learning_rate * dB2
+        
+    def fit(self):
         pass    
     
     
