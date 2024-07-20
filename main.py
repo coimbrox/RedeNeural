@@ -57,7 +57,7 @@ class NnModel:
             predicted = softmax[i][correct_index]
             predictions[i] = predicted
         log_probs = -np.log(predictions)
-        return log_probs/self.yshape[0]
+        return log_probs/self.y.shape[0]
     def backpropagation(self,softmax:np.ndarray,learning_rate:float)->None:
         delta2 = np.copy(softmax)
         delta2[range(x.shape[0]),y] -= 1
@@ -73,10 +73,25 @@ class NnModel:
         self.B1 -= learning_rate * dB1
         self.B2 -= learning_rate * dB2
         
-    def fit(self):
-        pass    
-    
-    
-modelo = NnModel(x,y,10,2)
-softmax = modelo.foward(x)
-modelo.loss(softmax)
+    def fit(self,epochs:int,lr:float):
+        for epoch in range(epochs):
+            outputs= self.foward(self.x)
+            loss = self.loss(outputs)
+            self.backpropagation(outputs,lr)
+            
+            # Acuracia
+            predictions = np.argmax(outputs, axis = 1)
+            correct =(predictions == y).sum()
+            accuracy = correct / y.shape[0]
+            
+            if int((epoch+1) % (epochs/10)) == 0:
+                print(f'Epoch: {epoch+1}/{epochs} - Loss: {loss.mean()} - Accuracy: {accuracy:.3f}')    
+        return predictions  
+
+hidden_neurons = 10
+output_neurons = 2
+learning_rate = 0.001
+epochs = 500
+
+model = NnModel(x,y,hidden_neurons=hidden_neurons,output_neurons=output_neurons)
+result = model.fit(epochs,learning_rate)
