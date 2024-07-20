@@ -46,19 +46,24 @@ class NnModel:
         self.f1 = np.tanh(self.z1)
         #eq da reta 2
         z2 = self.f1.dot(self.W2) + self.B2
-        #função de ativação 2
-        f2 = np.tanh(z2)
-        #Softmax
-        exp_values = np.exp(f2)
+
+        exp_values = np.exp(z2)
         softmax = exp_values / np.sum(exp_values, axis=1, keepdims=True)
         return softmax
-    def loss(self):
-        pass
-    def backpropagation(self):
+    def loss(self, softmax):
+        #Cross Entropy - calcular a perda para classe correta
+        predictions = np.zeros(self.y.shape[0]) 
+        for i, correct_index in enumerate(self.y):
+            predicted = softmax[i][correct_index]
+            predictions[i] = predicted
+        log_probs = -np.log(predictions)
+        return log_probs/self.yshape[0]
+    def backpropagation(self,softmax:np.ndarray,learning_rate:float)->None:
         pass
     def fitr(self):
         pass    
     
     
-modelo = NnModel(x,y,hidden_neurons=3,output_neurons=2)
-modelo.foward(x)
+modelo = NnModel(x,y,10,2)
+softmax = modelo.foward(x)
+modelo.loss(softmax)
