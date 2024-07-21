@@ -58,13 +58,14 @@ class NnModel:
             predictions[i] = predicted
         log_probs = -np.log(predictions)
         return log_probs/self.y.shape[0]
+    
     def backpropagation(self,softmax:np.ndarray,learning_rate:float)->None:
         delta2 = np.copy(softmax)
-        delta2[range(x.shape[0]),y] -= 1
+        delta2[range(self.x.shape[0]),self.y] -= 1
         dW2 = (self.f1.T).dot(delta2)
         dB2 = np.sum(delta2, axis=0, keepdims=True)
         delta1 = delta2.dot(self.W2.T) * (1 - np.power(np.tanh(self.z1), 2 ))
-        dW1 = (x.T).dot(delta1)
+        dW1 = (self.x.T).dot(delta1)
         dB1 = np.sum(delta1, axis=0, keepdims=True)
         
         #atualiando pesos e bias
@@ -72,8 +73,17 @@ class NnModel:
         self.W2 -= learning_rate * dW2
         self.B1 -= learning_rate * dB1
         self.B2 -= learning_rate * dB2
-        
-    def fit(self,epochs:int,lr:float):
+    
+    def show_plot(self,predictions):
+        if self.x.shape[1] == 2:
+            plt.scatter(self.x[:,0],self.x[:,1],c=predictions,s=50,alpha=0.7,cmap='cool')
+            plt.show()
+        elif self.x.shape[1] == 3:
+            ax = plt.axes(projection='3d')
+            ax.scatter3D(self.x[:,0],self.x[:,1],self.x[:,2],c=predictions,s=40,alpha=0.7,cmap='cool')
+            plt.show()
+            
+    def fit(self,epochs:int,lr:float,show_plot:bool=False):
         for epoch in range(epochs):
             outputs= self.foward(self.x)
             loss = self.loss(outputs)
@@ -81,11 +91,13 @@ class NnModel:
             
             # Acuracia
             predictions = np.argmax(outputs, axis = 1)
-            correct =(predictions == y).sum()
-            accuracy = correct / y.shape[0]
-            
+            correct =(predictions == self.y).sum()
+            accuracy = correct / self.y.shape[0]
+            self.show_plot(predictions)
             if int((epoch+1) % (epochs/10)) == 0:
                 print(f'Epoch: {epoch+1}/{epochs} - Loss: {loss.mean()} - Accuracy: {accuracy:.3f}')    
+                if show_plot:
+                    self.show_plot(predictions)
         return predictions  
 
 hidden_neurons = 10
@@ -94,4 +106,4 @@ learning_rate = 0.001
 epochs = 500
 
 model = NnModel(x,y,hidden_neurons=hidden_neurons,output_neurons=output_neurons)
-result = model.fit(epochs,learning_rate)
+result = model.fit(epochs,learning_rate,show_plot=True)
